@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.appLabel }}
+  namespace: {{ .Values.nameSpace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  selector:
+    app: {{ .Values.appLabel }}
+  ports:
+    - port: {{ .Values.service.vllmPort }}
+      targetPort: {{ .Values.service.vllmPort }}
+      name: http
+  type: ClusterIP
