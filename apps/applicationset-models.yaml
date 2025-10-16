@@ -1,3 +1,5 @@
+# applicationset-models.yaml
+
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -17,7 +19,9 @@ spec:
       project: default
       destination:
         server: https://kubernetes.default.svc
-        namespace: "{{nameSpace}}"
+        # THIS IS THE FIX:
+        # Use the filename to set the destination namespace.
+        namespace: "{{path.basename}}"
       syncPolicy:
         automated:
           prune: true
@@ -31,7 +35,7 @@ spec:
           path: charts/model-as-a-service
           helm:
             valueFiles:
-              - "{{path}}"   # the model file (e.g., models/llama-3_2-8b.yaml)
+              - "{{path}}" # the model file (e.g., models/llama-3_2-8b.yaml)
 
         # 2) InferencePool (Gateway API Inference Extension) — installed in same namespace
         - chart: inferencepool
@@ -41,8 +45,9 @@ spec:
             releaseName: "vllm-{{appName}}-pool"
             parameters:
               - name: provider.name
-                value: "{{providerName}}"              # e.g., gke
+                value: "{{providerName}}" # e.g., gke
               - name: inferencePool.modelServers.matchLabels.app
-                value: "{{appLabel}}"                   # MUST match your vLLM Deployment label
+                value: "{{appLabel}}" # MUST match your vLLM Deployment label
               - name: inferenceExtension.monitoring.gke.enabled
                 value: "true"
+                
